@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<VBox spacing="10" xmlns="http://javafx.com/javafx/21.0.2" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.tradingbot.tinkoff.controller.MainController"
+      minHeight="700.0" prefHeight="700.0" minWidth="1000.0" prefWidth="1200.0">
+    <padding>
+        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
+    </padding>
+
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Tinkoff API Token:"/>
+        <TextField fx:id="tokenField" HBox.hgrow="ALWAYS" promptText="Введите ваш токен для песочницы"/>
+    </HBox>
+
+    <!-- <<<<< ИЗМЕНЕНО: Баланс и пополнение + Интервал СВЕЧЕЙ >>>>> -->
+    <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-border-color: #cccccc; -fx-padding: 10; -fx-border-radius: 5;">
+        <VBox spacing="5">
+            <Label text="Баланс в песочнице:" style="-fx-font-weight: bold;"/>
+            <Label fx:id="balanceLabel" text="-" style="-fx-font-size: 16px; -fx-text-fill: #2a7f2a;"/>
+        </VBox>
+        <Region HBox.hgrow="ALWAYS"/>
+        <VBox spacing="5" alignment="CENTER_RIGHT">
+            <Label text="Интервал:"/>
+            <ChoiceBox fx:id="intervalChoiceBox" prefWidth="150"/>
+        </VBox>
+        <VBox spacing="5" alignment="CENTER_RIGHT">
+            <Label text="Пополнить счет на (RUB):"/>
+            <TextField fx:id="depositAmountField" promptText="100000" prefWidth="100"/>
+        </VBox>
+        <Button fx:id="depositButton" text="Пополнить" onAction="#handleDeposit"/>
+    </HBox>
+
+    <!-- <<<<< Кнопки управления >>>>> -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Button fx:id="connectButton" text="Подключить" onAction="#handleConnect"/>
+        <Button fx:id="startButton" text="Запустить стратегии" onAction="#handleStart"/>
+        <Button fx:id="stopButton" text="Остановить стратегии" onAction="#handleStop"/>
+    </HBox>
+
+    <SplitPane dividerPositions="0.5" VBox.vgrow="ALWAYS"> <!-- Основной SplitPane -->
+        <VBox spacing="5"> <!-- Левая часть: Лог событий -->
+            <Label text="Лог событий:"/>
+            <TextArea fx:id="logTextArea" editable="false" VBox.vgrow="ALWAYS"/>
+        </VBox>
+        <VBox spacing="5"> <!-- Правая часть: Сигналы и Выбор инструментов -->
+            <HBox spacing="10" VBox.vgrow="ALWAYS"> <!-- HBox для Сигналов и Выбора инструментов -->
+                <VBox spacing="5" HBox.hgrow="ALWAYS"> <!-- Сигналы -->
+                    <Label text="Торговые сигналы:"/>
+                    <TableView fx:id="signalsTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="signalInstrumentColumn" text="Инструмент" prefWidth="100"/>
+                            <TableColumn fx:id="signalTimeColumn" text="Время" prefWidth="75"/>
+                            <TableColumn fx:id="signalTypeColumn" text="Тип" prefWidth="75"/>
+                            <TableColumn fx:id="signalScoreColumn" text="Балл" prefWidth="50"/>
+                            <TableColumn fx:id="signalPriceColumn" text="Цена" prefWidth="100"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+                <VBox spacing="5"> <!-- Выбор инструментов + Избранное -->
+                    <Label text="Выбор инструмента:"/>
+                    <TabPane fx:id="instrumentTabPane" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+                        <tabs>
+                            <Tab text="Инструменты">
+                                <content>
+                                    <VBox spacing="5">
+                                        <ListView fx:id="instrumentListView" prefWidth="250" VBox.vgrow="ALWAYS"/>
+                                        <Button fx:id="addToFavoritesButton" text="Добавить в избранное" onAction="#handleAddToFavorites" alignment="CENTER" HBox.hgrow="ALWAYS"/>
+                                    </VBox>
+                                </content>
+                            </Tab>
+                            <Tab text="Избранное">
+                                <content>
+                                    <ListView fx:id="favoriteInstrumentListView" prefWidth="250" VBox.vgrow="ALWAYS"/>
+                                </content>
+                            </Tab>
+                        </tabs>
+                    </TabPane>
+                    <Label text="Выбор стратегий:"/>
+                    <ListView fx:id="strategyListView" prefWidth="250" VBox.vgrow="ALWAYS"/>
+                </VBox>
+            </HBox>
+        </VBox>
+    </SplitPane>
+
+    <!-- <<<<< Блок активных заявок, истории и позиций - остается внизу >>>>> -->
+    <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+        <tabs>
+            <Tab text="Активные заявки">
+                <content>
+                    <TableView fx:id="activeOrdersTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn text="Время" fx:id="activeOrderTimeColumn"/>
+                            <TableColumn text="Инструмент" fx:id="activeOrderInstrumentColumn"/>
+                            <TableColumn text="Направление" fx:id="activeOrderDirectionColumn"/>
+                            <TableColumn text="Кол-во" fx:id="activeOrderQuantityColumn"/>
+                            <TableColumn text="Цена" fx:id="activeOrderPriceColumn"/>
+                            <TableColumn text="Статус" fx:id="activeOrderStatusColumn"/>
+                            <!-- Добавьте другие колонки по необходимости -->
+                        </columns>
+                    </TableView>
+                </content>
+            </Tab>
+            <Tab text="История заявок">
+                <content>
+                    <TableView fx:id="historyOrdersTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn text="Время" fx:id="historyOrderTimeColumn"/>
+                            <TableColumn text="Инструмент" fx:id="historyOrderInstrumentColumn"/>
+                            <TableColumn text="Направление" fx:id="historyOrderDirectionColumn"/>
+                            <TableColumn text="Кол-во" fx:id="historyOrderQuantityColumn"/>
+                            <TableColumn text="Цена" fx:id="historyOrderPriceColumn"/>
+                            <TableColumn text="Статус" fx:id="historyOrderStatusColumn"/>
+                            <!-- Добавьте другие колонки по необходимости -->
+                        </columns>
+                    </TableView>
+                </content>
+            </Tab>
+            <Tab text="Позиции">
+                <content>
+                    <TableView fx:id="positionsTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn text="Инструмент" fx:id="positionInstrumentColumn"/>
+                            <TableColumn text="Тип" fx:id="positionTypeColumn"/>
+                            <TableColumn text="Кол-во" fx:id="positionQuantityColumn"/>
+                            <TableColumn text="Цена входа" fx:id="positionEntryPriceColumn"/>
+                            <TableColumn text="Тек. цена" fx:id="positionCurrentPriceColumn"/>
+                            <TableColumn text="SL" fx:id="positionStopLossColumn" prefWidth="80"/>
+                            <TableColumn text="TP" fx:id="positionTakeProfitColumn" prefWidth="80"/>
+                            <TableColumn text="P/L, %" fx:id="positionPnlPercentColumn"/>
+                            <!-- НОВАЯ КОЛОНКА С КНОПКОЙ -->
+                            <TableColumn text="Действие" fx:id="positionActionColumn"/>
+                        </columns>
+                    </TableView>
+                </content>
+            </Tab>
+        </tabs>
+    </TabPane>
+
+</VBox>
